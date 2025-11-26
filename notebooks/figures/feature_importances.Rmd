@@ -1,0 +1,316 @@
+---
+title: "Feature Importances Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(ggseg)
+library(dplyr)
+library(ggplot2)
+library(viridis)
+```
+
+
+```{r}
+dk
+```
+```{r}
+#write.table(as_tibble(dk), "dk_cortical_atlas.csv", row.names = FALSE, sep=",", col.names = TRUE)
+as_tibble(dk)
+
+```
+```{r}
+someData = tibble(
+  region=c("transverse temporal","parahippocampal", "superior frontal", "lateral orbitofrontal",
+           "rostral anterior cingulate", "medial orbitofrontal", "pars triangularis", 
+           "pars opercularis", "inferior parietal", "temporal pole",
+           #left rois
+           "superior temporal", "caudal anterior cingulate", "middle temporal", "pars opercularis",
+           "medial orbitofrontal", 
+           "isthmus cingulate", "postcentral", "lingual", "inferior temporal", "inferior parietal"
+           ),
+  
+  hemisphere=c(rep("right", 10), rep("left", 10)),
+  importance=c(0.025407868, 0.025262687, 0.023019396, 0.021872684, 0.0191311, 0.011304977, 0.010560078, 0.00877259, 0.008326031, 0.0077420403,
+               0.01412341, 0.010788579, 0.008524049, 0.0077304095, 0.0061058453, 0.0056145256, 0.005377363, 0.0049730954, 0.0042118314, 0.004095626)
+)
+someData
+```
+
+
+```{r}
+dk %>% 
+  as_tibble() %>% 
+  left_join(someData)
+```
+
+
+```{r}
+dk %>% 
+  as_tibble() %>% 
+  left_join(someData) %>% 
+  arrange(importance)
+
+```
+
+```{r}
+#someData$hemi = rep("right", nrow(someData))
+someData
+
+```
+
+
+```{r}
+dk %>% 
+  as_tibble() %>% 
+  left_join(someData) %>% 
+  arrange(importance)
+
+```
+
+
+```{r}
+ggplot(someData) +geom_brain( atlas=dk, mapping=aes(fill=importance))
+
+```
+
+```{r}
+newAtlas = dk %>% 
+  as_tibble() %>% 
+  left_join(someData) %>% 
+  as_brain_atlas()
+
+```
+
+
+```{r}
+ggplot() +
+  geom_brain(atlas = newAtlas, 
+             mapping = aes(fill=importance), 
+             position = position_brain(hemi ~ side)
+  )
+
+```
+
+```{r}
+ggseg(someData, atlas = dk, 
+      colour = "black",
+      size = .1, 
+      position = "stacked",
+      mapping = aes(fill = importance))
+
+```
+```{r}
+
+library(ggseg)
+library(viridis)
+
+ggseg(someData, atlas = dk, 
+      color='black',
+      size = .1, 
+      position = "stacked",
+      mapping = aes(fill = importance)) + 
+  scale_fill_gradient(low = "blue", high = "yellow") + 
+  labs(fill = "Importance")
+
+```
+
+```{r}
+
+top10Data <- someData %>%
+  arrange(desc(importance)) %>%  # Sort by importance in descending order
+  head(10)                        # Take the top 10 entries
+
+ggplot(top10Data, aes(x = reorder(region, importance), y = importance)) + #fill = hemisphere
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  coord_flip() + 
+  #scale_fill_gradient(low = "blue", high = "yellow") + 
+  scale_fill_viridis_d(option = "C", direction = -1) + 
+  labs(x = "Region", y = "Importance") +
+  theme(legend.position = "bottom",
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "gray"),
+        panel.grid.minor = element_line(color = "gray"))
+```
+
+```{r}
+
+ggplot(someData, aes(x = reorder(region, importance), y = importance, fill = hemisphere)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  coord_flip() + 
+  scale_fill_manual(values = c("blue", "yellow"), labels = c("Left Hemisphere", "Right Hemisphere")) + 
+  labs(x = "Region", y = "Importance") + 
+  theme(legend.position = "bottom")
+
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(someData, aes(x = reorder(region, importance), y = importance, fill = importance)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  coord_flip() + 
+  scale_fill_continuous(low = "blue", high = "yellow") + 
+  facet_wrap(~ hemisphere, ncol = 1) + 
+  labs(x = "Region", y = "Importance") + 
+  theme(legend.position = "none", 
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(size = 0.2, color = "lightgray"),
+        panel.grid.minor = element_line(size = 0.1, color = "lightgray"))
+```
+
+```{r}
+library(ggplot2)
+library(viridis)
+
+ggplot(someData, aes(x = reorder(region, importance), y = importance, fill = hemisphere)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  coord_flip() + 
+  #scale_fill_viridis_d()
+  scale_fill_viridis_d(option = "H") + 
+  labs(x = "Region", y = "Importance") + 
+  theme(legend.position = "bottom")
+
+```
+
+
+```{r}
+someData = data.frame(
+  region = rep(c("transverse temporal", "insula",
+               "precentral","superior parietal"),2), 
+  p = sample(seq(0,.5,.001), 8),
+  AgeG = c(rep("Young",4), rep("Old",4)),
+  stringsAsFactors = FALSE)
+  
+ggplot(someData) +   
+  geom_brain(atlas = dk, 
+             colour="white", 
+             mapping=aes(fill=p)) +
+  facet_wrap(~AgeG, ncol=1) +
+  theme(legend.position = "bottom")
+```
+
+
+```{r}
+# If you group_by the columns you will facet by, this will work well.
+someData = someData %>% 
+  group_by(AgeG)
+
+# We can now supply the newAtlas as an atlas to ggseg
+ggplot(someData) +
+  geom_brain(atlas=dk, 
+             colour="white",
+             mapping=aes(fill=p)) +
+  facet_wrap(~AgeG, ncol=1) +
+  theme(legend.position = "bottom") +
+  scale_fill_gradientn(colours = c("royalblue","firebrick","goldenrod"),na.value="grey")
+
+```
+
+
+```{r}
+brain_regions(dk)
+
+```
+
+```{r}
+brain_labels(dk)
+
+```
+```{r}
+ggplot() +
+  geom_brain(atlas = dk)
+```
+
+
+```{r}
+## Subcortical atlas
+ggplot() +
+  geom_brain(atlas = aseg, side = "coronal", hemi = "left")
+```
+
+```{r}
+brain_regions(aseg)
+```
+```{r}
+as_tibble(aseg)
+```
+
+
+```{r}
+subData = tibble(
+  region=c("thalamus proper", "lateral ventricle",  "hippocampus", "ventral DC", "caudate", 
+           
+           "4th ventricle", "CC anterior", "CC posterior","cerebellum white matter", 
+           #"3rd ventricle", "CC mid anterior", "cerebellum cortex", 
+           
+           "lateral ventricle", "putamen", "hippocampus" 
+           
+           
+           ),
+  
+  hemi=c(rep("right", 5), rep("midline", 4), rep("left", 3)),
+         
+  importance=c(0.015345136, 0.010552502, 0.0070723635, 0.0058553587, 0.0054034847, 0.010080749, 0.005287537, 0.005226166,
+               0.0057098838, 0.005134855, 0.0041299337, 0.0030617039
+  )
+)
+
+subData
+```
+```{r}
+aseg %>% 
+  as_tibble() %>% 
+  left_join(subData) %>% 
+  arrange(importance)
+
+```
+
+```{r}
+
+ggseg(subData, atlas = aseg, 
+      size = .1, 
+      mapping = aes(fill = importance)) + 
+  scale_fill_gradient(low = "blue", high = "yellow") + 
+  labs(fill = "Importance") + 
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank()) +
+    theme(legend.position = "none")
+```
+```{r}
+
+ggplot(subData, aes(x = reorder(region, importance), y = importance, fill=importance)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  coord_flip() + 
+  labs(x = "Region", y = "Importance") + 
+  scale_fill_continuous(low = "blue", high = "yellow") +
+  theme(legend.position = "none",
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "gray"),
+        panel.grid.minor = element_line(color = "gray"))
+
+```
+
+```{r}
+brain_regions(aseg)
+```
+
+```{r}
+brain_labels(aseg)
+```
+
+
+```{r}
+brain_regions(aseg)
+```
+
+
+```{r}
+brain_regions(aseg)
+```
+
+
+
+
+
+

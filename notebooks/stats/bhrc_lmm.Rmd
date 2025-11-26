@@ -1,0 +1,239 @@
+
+---
+title: "BHRC BrainAge Gap Model Stats"
+output: html_notebook
+---
+
+Add new R code chunk: *Cmd+Option+I*.
+
+Click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+#### Load packages
+
+```{r}
+
+library(readstata13)
+library(ggplot2)
+library(tidyr)
+library(ggthemes)
+library(ggExtra)
+library(methods)
+library(lme4)
+library(readr)
+library(tidyverse)
+library(rmcorr)
+library(VIM)
+library(naniar)
+library(stargazer)
+library(lmerTest)
+library(afex)
+library(sjPlot)
+library(Cairo)
+library(jtools)
+
+```
+
+```{r}
+
+#bhrc <- read_csv("~/Documents/neptune/data/processed/2024-12-04_bhrc_predicted.csv", show_col_types = #FALSE)
+bhrc <- read_csv("~/Documents/neptune/data/processed/2025-01-29_bhrc_all_waves.csv", show_col_types = FALSE)
+colnames(bhrc) <- make.names(colnames(bhrc)) #strip whitespace from column names
+head(bhrc)
+```
+
+```{r}
+names(bhrc)
+```
+
+```{r}
+ggplot(bhrc, aes(x = chronological_age, y = brain_age, color = cantpsych)) +
+  geom_point() +
+  geom_smooth(method = "lm", fill = NA)
+```
+## Base models
+### 1. Do youth with familial risk for SMI display higher brain age?
+
+#### 1.1 Effect of familial risk
+```{r}
+group_mod <- lmer(corrected_brain_age_gap ~ group + poly(chronological_age, 2) + sex 
+                  + (1 | scan_id), data = bhrc) #poly = polynomials (i.e., age, age squared)
+#group_mod <- lm(adjusted_brain_age_gap ~ group + poly(chronological_age, 2) + sex, data = bhrc)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+#jtools::summ(group_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(group_mod, digits=3) 
+```
+
+```{r}
+#summary(group_mod) 
+```
+
+### 2. Do youth who have antecedents display accelerated brain aging?
+
+##### 2.1 Effect of anxiety symptoms
+
+```{r}
+anx_mod <- lmer(corrected_brain_age_gap ~ anxiety + poly(chronological_age, 2) + sex
+              + (1 | scan_id), data = bhrc) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+#jtools::summ(anx_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(anx_mod, digits=3) 
+#summary(anx_mod)
+```
+
+#### 2.2 Effect of ADHD
+```{r}
+adhd_mod <- lmer(corrected_brain_age_gap ~ adhd + poly(chronological_age, 2) + sex
+               + (1 | scan_id), data = bhrc) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+#jtools::summ(adhd_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+#adhd_ <- lmer(corrected_brain_age_gap ~ sex + cladhd + (1|fid) + (1|iid), data=bhrc)
+tab_model(adhd_mod, digits=3) 
+#summary(adhd_mod)
+```
+
+#### 2.3 Effect of psychotic-like experiences
+```{r}
+
+ple_mod <- lmer(corrected_brain_age_gap ~ cantpsych + poly(chronological_age, 2) + sex
+              + (1 | scan_id), data = bhrc) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+#jtools::summ(ple_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(ple_mod, digits=3) 
+#summary(ple_mod)
+```
+
+#### 2.4 Effect of depression
+```{r}
+
+dep_mod <- lmer(corrected_brain_age_gap ~ depression + poly(chronological_age, 2) + sex
+              + (1 | scan_id), data = bhrc) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+#jtools::summ(dep_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(dep_mod, digits=3) 
+#summary(dep_mod)
+```
+#### 2.4 Effect of bipolar disorder
+```{r}
+
+bpd_mod <- lmer(corrected_brain_age_gap ~ bpd + poly(chronological_age, 2) + sex
+              + (1 | scan_id), data = bhrc) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+#jtools::summ(bpd_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(bpd_mod)
+#summary(bpd_mod)
+```
+
+### 3. All predictor Models
+
+
+```{r}
+
+all_mod <- lmer(corrected_brain_age_gap ~ poly(chronological_age, 2) + 
+                sex +  anxiety + adhd + depression + (1 | scan_id),  #group +
+                data = bhrc)
+
+#jtools::summ(all_mod, scale = FALSE, transform.response = T, confint = T)
+
+tab_model(all_mod)
+```
+* none of the variables are significant after being in the same model due to likely high correlation
+
+
+## Visuals
+
+```{r}
+summary(all_mod)
+```
+
+```{r}
+
+all_mod_colors <- c(
+  "#FF1F58",
+  "#b5179e", "#7209b7", 
+  "#560bad", "#480ca8",
+  "#3a0ca3", "#3f37c9", "#4361ee", "#4895ef", "#7209b7", "#7209b7"
+)
+
+all_mod_plot1 <- plot_summs(
+  adhd_mod, anx_mod, ple_mod, dep_mod, bpd_mod, group_mod, all_mod,
+  scale = TRUE,
+  omit.coefs = c("(Intercept)", "sexMale", "poly(chronological_age, 2)1", "poly(chronological_age, 2)2"),
+  plot.distributions = F,
+  colors = all_mod_colors[1-4],
+  point.shape = T,
+  model.names = c(
+                  "ADHD", "Anxiety", "Psychotic symptoms", "Depression", 
+                  "Bipolar Disorder",
+                  "Familial Risk", "All"
+                  )
+)
+
+all_mod_plot1
+```
+
+```{r}
+
+all_mod_colors <- c(
+  "#FF1F58",
+  "#b5179e", "#7209b7", 
+  "#560bad", "#480ca8",
+  "#3a0ca3", "#3f37c9", "#4361ee", "#4895ef", "#7209b7", "#7209b7"
+)
+
+my_palette <- colorRampPalette(c("red", "yellow", "green"))
+
+all_mod_plot <- plot_summs(
+  adhd_mod, anx_mod, all_mod,
+  #ple_mod, dep_mod, bpd_mod,
+  scale = TRUE,
+  omit.coefs = c("(Intercept)", "sexMale", "`poly(chronological_age, 2)`1", "`poly(chronological_age, 2)`2"
+  #"groupFHR (SMI)",
+  ),
+  plot.distributions = F,
+  colors = all_mod_colors[1-4], #rainbow(11), #brewer.pal(n=11, name = "Set3")
+  point.shape = T, #,
+  model.names = c(
+                  "ADHD", "Anxiety", "Sensitivity"  #"Depression"
+                  #"Psychotic symptoms", "Developmental psychopahtology", "Antecedents", "Depression", 
+                  #"Adversity", "Bipolar Disorder", 
+                  #"Depression + Adversity", "Depression + Antecedents"
+                  )
+)
+ggsave("bhrc_effect_size_xgboost.png", plot = all_mod_plot, dpi = 800, width = 8, height = 8, units = "in", bg = "white")
+
+all_mod_plot
+
+```
+
+
+```{r}
+plot_summs(ple_mod, omit.coefs = c("(Intercept)", "sexMale", "poly(chronological_age, 2)1", "poly(chronological_age, 2)2"))
+```
+
+
+
+

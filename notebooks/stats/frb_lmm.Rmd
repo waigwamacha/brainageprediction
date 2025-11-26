@@ -1,0 +1,175 @@
+
+---
+title: "FORBOW BrainAge Gap Model Stats"
+output: html_notebook
+---
+
+Add new R code chunk: *Cmd+Option+I*.
+
+Click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+#### Load packages
+
+```{r}
+
+library(readstata13)
+library(ggplot2)
+library(tidyr)
+library(ggthemes)
+library(ggExtra)
+library(methods)
+library(lme4)
+library(readr)
+library(tidyverse)
+library(rmcorr)
+library(VIM)
+library(naniar)
+library(stargazer)
+library(lmerTest)
+library(afex)
+library(sjPlot)
+library(Cairo)
+
+```
+
+```{r}
+#frb <- read_csv("~/Documents/neptune/data/processed/brain_age_results_no_schz_2024-08-12.csv", show_col_types = FALSE) # nolint: line_length_linter.
+frb <- read_csv("~/Documents/neptune/data/processed/df_corrected_age_2024-10-17.csv", show_col_types = FALSE) # nolint: line_length_linter.
+head(frb)
+```
+
+```{r}
+ggplot(frb, aes(x = chronological_age, y = corrected_brain_age_gap, color = group)) +
+  geom_point() +
+  geom_smooth(method = "lm", fill = NA)
+```
+## Base models
+### 1. Do youth with familial risk for SMI display higher brain age?
+
+#### 1.1 Effect of familial risk
+```{r}
+group_mod <- lmer(corrected_brain_age_gap ~ group + poly(chronological_age, 2) + sex
+  + (1 | scan_id) + (1 | fid), data = frb) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+jtools::summ(group_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(group_mod, digits=3) 
+```
+
+#### 1.2 Effect of MDD diagnosis
+
+```{r}
+mdd_mod <- lmer(corrected_brain_age_gap ~ clmdd + poly(chronological_age, 2) + sex
+  + (1 | scan_id) + (1 | fid), data = frb) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+jtools::summ(mdd_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(mdd_mod, digits=3) 
+```
+
+#### 1.3 Effect of Bipolar Disorder diagnosis
+
+```{r}
+bpd_mod <- lmer(adjusted_brain_age_gap ~ clbpd + poly(chronological_age, 2) + sex
+  + (1 | scan_id) + (1 | fid), data = frb) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+jtools::summ(bpd_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(bpd_mod, digits=3) 
+```
+
+### 2. Do youth who have antecedents display accelerated brain aging?
+
+##### 2.1 Effect of anxiety symptoms
+
+```{r}
+anx_mod <- lmer(corrected_brain_age_gap ~ anx_ant + poly(chronological_age, 2) + sex
+  + (1 | scan_id) + (1 | fid), data = frb) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+jtools::summ(anx_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(anx_mod, digits=3) 
+```
+
+#### 2.2 Effect of ADHD
+```{r}
+adhd_mod <- lmer(corrected_brain_age_gap ~ cladhd + poly(chronological_age, 2) + sex
+  + (1 | scan_id) + (1 | fid), data = frb) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+jtools::summ(adhd_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+#adhd_ <- lmer(corrected_brain_age_gap ~ sex + cladhd + (1|fid) + (1|iid), data=frb)
+tab_model(adhd_mod, digits=3) 
+lmer(adhd_mod)
+```
+
+#### 2.3 Effect of psychotic-like experiences
+```{r}
+ple_mod <- lmer(corrected_brain_age_gap ~ psy_ant + poly(chronological_age, 2) + sex
+  + (1 | scan_id) + (1 | fid), data = frb) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+jtools::summ(ple_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(ple_mod, digits=3) 
+```
+
+#### 2.4 Effect of low cognitive scores
+```{r}
+iq_mod <- lmer(adjusted_brain_age_gap ~ iq + poly(chronological_age, 2) + sex
+  + (1 | scan_id) + (1 | fid), data = frb) #poly = polynomials (i.e., age, age squared)
+# polynomial age variable captures the non-linear relationship between age and brainage gap
+
+jtools::summ(iq_mod, scale = FALSE, transform.response = T, confint = T)
+```
+
+```{r}
+tab_model(iq_mod, digits=3) 
+```
+
+### 3. All predictor Models
+
+
+```{r}
+
+all_mod <- lmer(adjusted_brain_age_gap ~ poly(chronological_age, 2) + 
+                sex + group + clmdd + clbpd + psy_ant + anx_ant + cladhd + iq + (1 | scan_id) + (1 | fid), 
+                data = frb)
+
+jtools::summ(all_mod, scale = FALSE, transform.response = T, confint = T)
+```
+* none of the variables are significant after being in the same model due to likely high correlation
+
+
+### 3. Do youth with familial risk for SMI who also have the above antecedents display a positive brain age gap, and does it significantly differ from youth without familial risk or antecedent traits?
+
+#### 3.1 TBD
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
