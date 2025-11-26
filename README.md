@@ -102,7 +102,7 @@ Figure 1. Model performance and top 10 important features
   4. Dufumier, B., Gori, P., Victor, J., Grigis, A., Wessa, M., Brambilla, P., Favre, P., Polosan, M., Mcdonald, C., Piguet, C., & Duchesnay, E. (2021). Contrastive Learning with Continuous Proxy Meta-Data for 3D MRI Classification. International Conference on Medical Image Computing and Computer-Assisted Intervention.
 
 
-### Poster presented at SOBP (April 2025)
+### Poster summary
 
 <p float="left">
   <img src="figures/poster_print.png" style="width:85%; height:auto;"/>
