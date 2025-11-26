@@ -1,7 +1,9 @@
 
 # Predicting brain age using XGBoost
 
-- This repository contains scripts used to train and test a XGBoost model on structural MRI features (surface area and volume) for the prediction of age. This predicted age (i.e., brain age) is important because the error (predicted - chronological age) is indicative of mental illness. A higher error (i.e., brain age gap) is associated with accelerated brain aging, and mood disorders such as depression and bipolar disorder.
+- This repository contains scripts used to train and test a XGBoost model on structural MRI features (surface area and volume) for the prediction of age. This predicted age (i.e., brain age) is important because the error (predicted - chronological age) is indicative of mental illness. A higher error (i.e., brain age gap) is associated with accelerated brain aging, and mood disorders such as depression and bipolar disorder. 
+
+- NB: results discussed here were presented at the society of biological psychiatry (SOBP) conference in Toronto, April 2025 (poster attached at the end).
 
 ### Background and Hypothesis
 
@@ -9,13 +11,12 @@
 
 ### Training Data
 
-- I used a training set that comprised of participants from 6 sites (ABIDE I & II, CMI, CORR, NIH and PING). The training sample included 2884 healthy participants (Mean age=15.43, SD=5.79); 2308 participants were used for training, while 576 were used as the validation set
+- We used a training set that comprised of participants from 6 sites (ABIDE I & II, CMI, CORR, NIH and PING). The training sample included 2884 healthy participants (Mean age=15.43, SD=5.79); 2308 participants were used for training, while 576 were used as the validation set
 
 – Age and sex distributions of the train and validation set
 
 <p float="left">
   <img src="figures/train_distribution.png" style="width:45%; height:auto;"/>
-  
 </p>
 
 ### Hyperparameter Optimization
@@ -53,6 +54,7 @@ Table 1. Hyperparameters selected for fitting the XGBoost model
 
 - To measure the performance of the model, we tested on the validation dataset (Figure 1). We used the mean absolute error (MAE), which represents the absolute difference between the predicted brain age and chronological age, as the evaluation metric. The model performed well on the validation dataset, achieving an MAE of 2.25 (0.40) (Figure 1). Below is also a figure showing the top 10 features that contributed the most to the model's performance. 
 
+Figure 1. Model performance and top 10 important features
 <p float="left">
   <img src="figures/validation_mae.png" style="width:45%; height:auto;"/>
   <img src="figures/top10.png" style="width:45%; height:auto;"/>
@@ -60,7 +62,7 @@ Table 1. Hyperparameters selected for fitting the XGBoost model
 
 #### Predictions
 
-- The XGBoost model performed well on our test set as seen in the scatter plot below. Additionally, the model has a bias (higher predictions for lower ages, lower predictions for higher ages), which we corrected for (Smith et al., 2019). 
+- The XGBoost model performed well on our test set as seen in the scatter plot below. Also, as expected, the model had a bias: higher predictions for lower ages, lower predictions for higher ages. We corrected for this bias (Smith et al., 2019). 
 
 <p float="left">
   <img src="figures/forbow_chronological_predicted_plot.png" style="width:45%; height:auto;" />
@@ -80,8 +82,7 @@ Table 1. Hyperparameters selected for fitting the XGBoost model
   <img src="figures/anxiety_bag_sobp_distribution.png" style="width:45%; height:auto;" />
 </p>
 
-
-- Additionally, in a sensitivity analysis, we didn't find any significant relationship between brain age gap and other psychopathology.
+- In a follow-up sensitivity analysis, we didn't find any significant relationship between brain age gap and other psychopathology.
 
 <p float="left">
   <img src="figures/frb_effect_size_xgboost.png" style="width:50%; height:auto;"/>
@@ -101,5 +102,10 @@ Table 1. Hyperparameters selected for fitting the XGBoost model
   4. Dufumier, B., Gori, P., Victor, J., Grigis, A., Wessa, M., Brambilla, P., Favre, P., Polosan, M., Mcdonald, C., Piguet, C., & Duchesnay, E. (2021). Contrastive Learning with Continuous Proxy Meta-Data for 3D MRI Classification. International Conference on Medical Image Computing and Computer-Assisted Intervention.
 
 
+### Poster presented at SOBP (April 2025)
+
+<p float="left">
+  <img src="figures/poster_print.png" style="width:85%; height:auto;"/>
+</p>
 
 
