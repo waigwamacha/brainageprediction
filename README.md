@@ -105,7 +105,7 @@ Figure 1. Model performance and top 10 important features
 ### Poster summary
 
 <p float="left">
-  <img src="figures/poster_print.png" style="width:85%; height:auto;"/>
+  <img src="figures/poster_print.png" style="width:98%; height:auto;"/>
 </p>
 
 
