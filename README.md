@@ -1,7 +1,7 @@
 
 # Predicting brain age using XGBoost
 
-- This repository contains scripts used to train and test a XGBoost model on structural MRI features (surface area and volume) for the prediction of age. This predicted age (i.e., brain age) is important because the error (predicted - chronological age) is indicative of mental illness [Ballester et al., 2022]. A higher error (i.e., brain age gap) is associated with accelerated brain aging, and mood disorders such as depression and bipolar disorder.
+- This repository contains scripts used to train and test a XGBoost model on structural MRI features (surface area and volume) for the prediction of age. This predicted age (i.e., brain age) is important because the error (predicted - chronological age) is indicative of mental illness. A higher error (i.e., brain age gap) is associated with accelerated brain aging, and mood disorders such as depression and bipolar disorder.
 
 ### Background and Hypothesis
 
